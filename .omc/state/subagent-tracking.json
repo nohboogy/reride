@@ -1,0 +1,78 @@
+{
+  "agents": [
+    {
+      "agent_id": "a86bf77",
+      "agent_type": "oh-my-claudecode:executor-low",
+      "started_at": "2026-02-12T09:04:28.491Z",
+      "parent_mode": "autopilot",
+      "status": "completed",
+      "completed_at": "2026-02-12T09:04:44.482Z",
+      "duration_ms": 15991
+    },
+    {
+      "agent_id": "a49da88",
+      "agent_type": "oh-my-claudecode:executor-low",
+      "started_at": "2026-02-12T09:06:45.199Z",
+      "parent_mode": "autopilot",
+      "status": "completed",
+      "completed_at": "2026-02-12T09:06:52.466Z",
+      "duration_ms": 7267
+    },
+    {
+      "agent_id": "a6c6fb7",
+      "agent_type": "oh-my-claudecode:executor-low",
+      "started_at": "2026-02-12T09:08:23.079Z",
+      "parent_mode": "autopilot",
+      "status": "completed",
+      "completed_at": "2026-02-12T09:08:30.195Z",
+      "duration_ms": 7116
+    },
+    {
+      "agent_id": "a140e09",
+      "agent_type": "oh-my-claudecode:executor-low",
+      "started_at": "2026-02-12T09:10:12.436Z",
+      "parent_mode": "autopilot",
+      "status": "completed",
+      "completed_at": "2026-02-12T09:10:40.533Z",
+      "duration_ms": 28097
+    },
+    {
+      "agent_id": "ac8c4bb",
+      "agent_type": "oh-my-claudecode:executor-low",
+      "started_at": "2026-02-12T09:11:45.091Z",
+      "parent_mode": "autopilot",
+      "status": "completed",
+      "completed_at": "2026-02-12T09:11:54.659Z",
+      "duration_ms": 9568
+    },
+    {
+      "agent_id": "ab8ea8e",
+      "agent_type": "oh-my-claudecode:executor-low",
+      "started_at": "2026-02-12T09:12:51.994Z",
+      "parent_mode": "autopilot",
+      "status": "completed",
+      "completed_at": "2026-02-12T09:13:00.843Z",
+      "duration_ms": 8849
+    },
+    {
+      "agent_id": "ac5e83f",
+      "agent_type": "oh-my-claudecode:executor",
+      "started_at": "2026-02-12T09:14:04.240Z",
+      "parent_mode": "autopilot",
+      "status": "completed",
+      "completed_at": "2026-02-12T09:14:50.436Z",
+      "duration_ms": 46196
+    },
+    {
+      "agent_id": "a89a991",
+      "agent_type": "oh-my-claudecode:git-master",
+      "started_at": "2026-02-12T09:15:08.652Z",
+      "parent_mode": "autopilot",
+      "status": "running"
+    }
+  ],
+  "total_spawned": 8,
+  "total_completed": 7,
+  "total_failed": 0,
+  "last_updated": "2026-02-12T09:15:08.760Z"
+}
