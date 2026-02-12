@@ -125,3 +125,12 @@ nul
 *.mov
 *.avi
 *.mkv
+
+# Business plans and private documents
+TODO_사업구체화.md
+개발_필요항목_및_배경조사.md
+스노우보드_AI_사업계획서.docx
+*사업*.md
+*사업*.docx
+*계획서*.docx
+*배경조사*.md
