@@ -6,7 +6,7 @@ from pathlib import Path
 import traceback
 
 from app.config import get_settings
-from app.api import auth, videos, analysis
+from app.api import auth, videos, analysis, analyses
 from app.core.database import engine, Base
 
 settings = get_settings()
@@ -47,6 +47,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix=f"{settings.api_prefix}/auth", tags=["auth"])
 app.include_router(videos.router, prefix=f"{settings.api_prefix}/videos", tags=["videos"])
 app.include_router(analysis.router, prefix=f"{settings.api_prefix}/analysis", tags=["analysis"])
+app.include_router(analyses.router, prefix=f"{settings.api_prefix}/analyses", tags=["analyses"])
 
 # Mount static files for local uploads/outputs
 uploads_dir = Path("uploads")
