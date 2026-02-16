@@ -33,10 +33,10 @@
 4. [x] Auth Provider (토큰 저장/로드, flutter_secure_storage 사용)
 5. [x] 라우터에 로그인 가드 추가
 
-### Phase 2: UI 완성 (서브에이전트 진행 중)
-6. [ ] ProfileScreen 완성
-7. [ ] 홈화면 pull-to-refresh + 실제 API 연결
-8. [ ] 영상 삭제 기능 (swipe-to-delete / long press)
+### Phase 2: UI 완성 ✅ 완료 (2026-02-16)
+6. [x] ProfileScreen 완성 (profileProvider 연결, 로그아웃 확인 다이얼로그, 통계 표시)
+7. [x] 홈화면 pull-to-refresh + 실제 API 연결 (homeProvider, RefreshIndicator, 빈상태/에러 UI)
+8. [x] 영상 삭제 기능 (homeProvider.delete + swipe-to-delete + 확인 다이얼로그)
 
 ### Phase 3: 백엔드-프론트 연동 완성 ✅ 완료 (2026-02-16)
 9. [x] API 엔드포인트 불일치 수정 (getProfile 경로, deleteAnalysis 추가)
