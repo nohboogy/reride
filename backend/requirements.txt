@@ -21,16 +21,18 @@ redis==7.1.1
 # AWS
 boto3==1.42.49
 
-# AI/ML (무거운 라이브러리 — 필요 시 별도 설치)
-# mediapipe==0.10.18
-# opencv-python-headless==4.10.0.84
-# numpy==1.26.4
-# torch==2.4.0
-# torchvision==0.19.0
+# AI/ML
+mediapipe==0.10.32
+opencv-python-headless==4.13.0.92
+numpy==2.4.2
+torch==2.10.0  # CPU 버전: --index-url https://download.pytorch.org/whl/cpu
+torchvision==0.25.0  # CPU 버전: --index-url https://download.pytorch.org/whl/cpu
 
 # Image/Video Processing
 Pillow==11.1.0
-# ffmpeg-python==0.2.0
+ffmpeg-python==0.2.0
+imageio==2.37.2
+imageio-ffmpeg==0.6.0
 
 # Utilities
 pydantic==2.12.5
