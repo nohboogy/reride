@@ -23,12 +23,12 @@
 
 ## 작업 우선순위
 
-### Phase 1: 버그 수정 + Auth (현재 진행 중)
-1. [ ] `api_service.dart` - `getVideos()` → `listAnalyses()` 수정
-2. [ ] 로그인 화면 (`login_screen.dart`)
-3. [ ] 회원가입 화면 (`register_screen.dart`)
-4. [ ] Auth Provider (토큰 저장/로드, flutter_secure_storage 사용)
-5. [ ] 라우터에 로그인 가드 추가
+### Phase 1: 버그 수정 + Auth ✅ 완료 (2026-02-16)
+1. [x] `api_service.dart` - `getVideos()` → `listAnalyses()` 수정
+2. [x] 로그인 화면 (`login_screen.dart`)
+3. [x] 회원가입 화면 (`register_screen.dart`)
+4. [x] Auth Provider (토큰 저장/로드, flutter_secure_storage 사용)
+5. [x] 라우터에 로그인 가드 추가
 
 ### Phase 2: UI 완성
 6. [ ] ProfileScreen 완성

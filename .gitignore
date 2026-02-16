@@ -10,7 +10,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ intentionally excluded — would conflict with Flutter's frontend/lib
 lib64/
 parts/
 sdist/
