@@ -247,6 +247,11 @@ class ApiService {
     return AnalysisResult.fromJson(response.data ?? {});
   }
 
+  /// Delete an analysis by ID.
+  Future<void> deleteAnalysis(String analysisId) async {
+    await _dio.delete('/api/v1/analyses/$analysisId');
+  }
+
   /// List analyses for the current user with pagination.
   Future<List<VideoItem>> listAnalyses({int page = 1, int pageSize = 20}) async {
     final response = await _dio.get<Map<String, dynamic>>(

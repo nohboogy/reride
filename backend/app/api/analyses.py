@@ -214,3 +214,32 @@ async def get_analysis(
     analysis = analysis_result.scalar_one_or_none()
 
     return await _build_detail_response(video, analysis)
+
+
+@router.delete("/{analysis_id}", status_code=204)
+async def delete_analysis(
+    analysis_id: str,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete an analysis (and its associated video) by ID."""
+    try:
+        video_id = int(analysis_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="유효하지 않은 분석 ID입니다")
+
+    video = await VideoService.get_video(db=db, video_id=video_id, user_id=user_id)
+    if not video:
+        raise HTTPException(status_code=404, detail="분석을 찾을 수 없습니다")
+
+    # Delete associated analysis result first (FK constraint)
+    analysis_result = await db.execute(
+        select(AnalysisResult).where(AnalysisResult.video_id == video_id)
+    )
+    analysis = analysis_result.scalar_one_or_none()
+    if analysis:
+        await db.delete(analysis)
+
+    await db.delete(video)
+    await db.flush()
+    return None
