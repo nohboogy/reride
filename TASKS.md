@@ -6,49 +6,63 @@
 
 ### Frontend (Flutter)
 - ✅ 앱 구조, 테마, 라우터 세팅
-- ✅ HomeScreen (영상 목록 + pull-to-refresh + 삭제 → Phase 2 서브에이전트 작업 중)
+- ✅ HomeScreen (영상 목록 + pull-to-refresh + 삭제)
 - ✅ UploadScreen (영상 업로드)
-- ✅ AnalysisResultScreen (분석 결과)
-- ✅ ApiService (HTTP 클라이언트, deleteAnalysis 추가)
-- ✅ ProfileScreen (서브에이전트 작업 중)
+- ✅ AnalysisResultScreen (분석 결과 + 폴링)
+- ✅ ApiService (HTTP 클라이언트)
+- ✅ ProfileScreen (API 연결, 통계, 로그아웃)
 - ✅ LoginScreen / RegisterScreen
-- ✅ AuthProvider (토큰 저장/로드)
-- ✅ Router guard (미로그인 → /login)
+- ✅ AuthProvider (flutter_secure_storage)
+- ✅ Router guard
+- ✅ 웹 빌드 성공 (flutter build web)
 
-### Backend (FastAPI)
-- ✅ FastAPI 앱 구조
-- ✅ POST/GET /api/v1/analyses
-- ✅ GET/DELETE /api/v1/analyses/{id}
+### Backend (FastAPI, Python 3.11)
+- ✅ FastAPI 앱 (uvicorn, SQLite, aiosqlite)
+- ✅ POST/GET/DELETE /api/v1/analyses
 - ✅ POST /api/v1/auth/register, /login, /logout
 - ✅ GET/PATCH /api/v1/auth/me
-- ✅ SQLite 로컬 DB
-- ✅ AI pipeline 구조
+- ✅ 파일 업로드 → DB 저장 → processing 상태 전환 E2E 확인
+- ✅ Python 3.11 venv 세팅 완료
+- ⏳ AI 파이프라인 (numpy/mediapipe/torch) 설치 중 (서브에이전트)
 
-## 작업 우선순위
+### AI Pipeline
+- ✅ 코드 구조: pose_estimation, trick_classification, character_animation
+- ✅ mediapipe pose landmarker 모델 파일 존재
+- ⏳ numpy, opencv, mediapipe, torch 설치 중
 
-### Phase 1: 버그 수정 + Auth ✅ 완료 (2026-02-16)
-1. [x] `api_service.dart` - `getVideos()` → `listAnalyses()` 수정
-2. [x] 로그인 화면 (`login_screen.dart`)
-3. [x] 회원가입 화면 (`register_screen.dart`)
-4. [x] Auth Provider (토큰 저장/로드, flutter_secure_storage 사용)
-5. [x] 라우터에 로그인 가드 추가
+## 완료된 Phase
 
-### Phase 2: UI 완성 ✅ 완료 (2026-02-16)
-6. [x] ProfileScreen 완성 (profileProvider 연결, 로그아웃 확인 다이얼로그, 통계 표시)
-7. [x] 홈화면 pull-to-refresh + 실제 API 연결 (homeProvider, RefreshIndicator, 빈상태/에러 UI)
-8. [x] 영상 삭제 기능 (homeProvider.delete + swipe-to-delete + 확인 다이얼로그)
+### Phase 1: Auth ✅
+### Phase 2: UI 완성 ✅
+### Phase 3: API 연동 수정 ✅
+### Phase 4: 백엔드 실행 + 업로드 E2E ✅
 
-### Phase 3: 백엔드-프론트 연동 완성 ✅ 완료 (2026-02-16)
-9. [x] API 엔드포인트 불일치 수정 (getProfile 경로, deleteAnalysis 추가)
-10. [x] 백엔드 누락 엔드포인트 추가 (PATCH /auth/me, DELETE /analyses/{id}, POST /auth/logout)
+## 다음 할 일 (Phase 5)
 
-### Phase 4: 다음 할 일
-- [ ] 백엔드 실제 실행 테스트 (uvicorn 로컬 실행)
-- [ ] Flutter 앱 실제 실행 테스트 (flutter run)
-- [ ] 영상 업로드 → AI 분석 → 결과 표시 E2E 플로우 검증
-- [ ] AI 파이프라인 연동 확인 (mediapipe, pytorch 실제 동작)
+- [ ] AI 파이프라인 임포트 성공 확인 (서브에이전트 완료 후)
+- [ ] 실제 스노보드 영상으로 분석 파이프라인 실행 테스트
+- [ ] 분석 결과가 Flutter 앱에 표시되는 전체 E2E 확인
+- [ ] `.env` 파일 정비 (SECRET_KEY 등 실제 값 설정)
+- [ ] Flutter 앱 Android/iOS 빌드 테스트
+
+## 실행 방법
+
+### 백엔드
+```bash
+cd reride/backend
+source .venv/bin/activate  # Python 3.11
+uvicorn app.main:app --reload --port 8000
+```
+
+### 프론트엔드
+```bash
+cd reride/frontend
+flutter run -d chrome      # 웹
+flutter run -d macos       # macOS 데스크탑
+```
 
 ## 파일 구조
 - workspace: /Users/wooseokro/.openclaw/workspace/reride
-- frontend: /Users/wooseokro/.openclaw/workspace/reride/frontend
-- backend: /Users/wooseokro/.openclaw/workspace/reride/backend
+- frontend: reride/frontend
+- backend: reride/backend (venv: backend/.venv)
+- AI: reride/ai
