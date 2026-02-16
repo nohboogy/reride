@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -186,9 +185,7 @@ class UploadScreen extends ConsumerWidget {
     UploadState state,
   ) {
     final file = state.selectedFile!;
-    final fileName = file.path.split('/').last;
-    final fileSize = file.lengthSync();
-    final fileSizeMB = fileSize / (1024 * 1024);
+    final fileName = file.name.isNotEmpty ? file.name : file.path.split('/').last;
 
     return Container(
       decoration: BoxDecoration(
@@ -230,7 +227,7 @@ class UploadScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${fileSizeMB.toStringAsFixed(1)} MB',
+            fileName,
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 16),
@@ -300,7 +297,7 @@ class UploadScreen extends ConsumerWidget {
     );
 
     if (pickedFile != null) {
-      ref.read(uploadProvider.notifier).selectFile(File(pickedFile.path));
+      ref.read(uploadProvider.notifier).selectFile(pickedFile);
     }
   }
 }

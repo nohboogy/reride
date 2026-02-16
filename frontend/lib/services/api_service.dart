@@ -210,15 +210,32 @@ class ApiService {
   // ── Analysis endpoints ─────────────────────────────────────────────────────
 
   /// Upload a video file and auto-trigger analysis.
-  /// [filePath] is the local path returned by image_picker.
+  /// Uses XFile bytes for cross-platform (web + mobile) compatibility.
   Future<VideoItem> uploadVideo({
     required String filePath,
     String? title,
     String? location,
     void Function(int sent, int total)? onSendProgress,
+    List<int>? fileBytes,       // web에서 XFile.readAsBytes() 결과
+    String? fileName,
   }) async {
+    final MultipartFile multipart;
+    if (fileBytes != null) {
+      // Web: 바이트 직접 사용
+      multipart = MultipartFile.fromBytes(
+        fileBytes,
+        filename: fileName ?? 'video.mp4',
+      );
+    } else {
+      // Mobile/Desktop: 파일 경로 사용
+      multipart = await MultipartFile.fromFile(
+        filePath,
+        filename: fileName ?? filePath.split('/').last,
+      );
+    }
+
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath),
+      'file': multipart,
       if (title != null) 'title': title,
       if (location != null) 'location': location,
     });

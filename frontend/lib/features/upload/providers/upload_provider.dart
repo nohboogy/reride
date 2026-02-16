@@ -1,13 +1,13 @@
-import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../services/api_service.dart';
 
 enum UploadStatus { idle, picking, uploading, done, error }
 
 class UploadState {
   final UploadStatus status;
-  final File? selectedFile;
-  final double uploadProgress; // 0.0 ~ 1.0
+  final XFile? selectedFile;       // XFile works on web + mobile
+  final double uploadProgress;     // 0.0 ~ 1.0
   final String? error;
   final VideoItem? uploadedVideo;
 
@@ -21,7 +21,7 @@ class UploadState {
 
   UploadState copyWith({
     UploadStatus? status,
-    File? selectedFile,
+    XFile? selectedFile,
     double? uploadProgress,
     String? error,
     VideoItem? uploadedVideo,
@@ -44,7 +44,7 @@ class UploadNotifier extends Notifier<UploadState> {
   @override
   UploadState build() => const UploadState();
 
-  void selectFile(File file) {
+  void selectFile(XFile file) {
     state = state.copyWith(
       status: UploadStatus.picking,
       selectedFile: file,
@@ -61,8 +61,13 @@ class UploadNotifier extends Notifier<UploadState> {
 
     try {
       final apiService = ref.read(apiServiceProvider);
+      final xFile = state.selectedFile!;
+      // 웹에서는 파일 바이트를 먼저 읽어야 함 (MultipartFile.fromFile 미지원)
+      final bytes = await xFile.readAsBytes();
       final video = await apiService.uploadVideo(
-        filePath: state.selectedFile!.path,
+        filePath: xFile.path,
+        fileName: xFile.name,
+        fileBytes: bytes,
         onSendProgress: (sent, total) {
           final progress = total > 0 ? sent / total : 0.0;
           state = state.copyWith(uploadProgress: progress);
