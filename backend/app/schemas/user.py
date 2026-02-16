@@ -1,6 +1,8 @@
+from __future__ import annotations
 from datetime import datetime
+from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class UserCreate(BaseModel):
@@ -25,7 +27,7 @@ class UserResponse(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    username: str | None = None
+    username: Optional[str] = None
 
 
 class TokenResponse(BaseModel):
