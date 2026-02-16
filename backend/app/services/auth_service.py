@@ -1,3 +1,4 @@
+from typing import Optional
 """Authentication service for user registration and login."""
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -113,7 +114,7 @@ class AuthService:
         return user, access_token
 
     @staticmethod
-    async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
+    async def get_user_by_id(db: AsyncSession, user_id: int) -> Optional[User]:
         """
         Fetch user by ID.
 
@@ -129,7 +130,7 @@ class AuthService:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
+    async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
         """
         Fetch user by email address.
 

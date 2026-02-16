@@ -1,3 +1,4 @@
+from typing import Optional
 from datetime import datetime, timezone
 
 from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, Text
@@ -13,7 +14,7 @@ class Video(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     original_filename: Mapped[str] = mapped_column(String(255))
     storage_path: Mapped[str] = mapped_column(String(500))
-    duration_seconds: Mapped[float | None] = mapped_column(Float, nullable=True)
+    duration_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     status: Mapped[str] = mapped_column(
         String(20), default="uploaded"
     )  # uploaded, processing, completed, failed

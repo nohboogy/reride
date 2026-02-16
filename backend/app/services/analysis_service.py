@@ -1,3 +1,4 @@
+from typing import Optional
 """영상 분석 서비스."""
 
 import asyncio
@@ -115,8 +116,13 @@ class AnalysisService:
                 "video_id": video_id
             }
         else:
-            # Run in background without blocking
-            asyncio.create_task(AnalysisService.run_analysis_sync(db, video_id, style))
+            # 새 세션으로 백그라운드 실행 (요청 세션 재사용 금지)
+            async def _run_with_new_session(vid_id: int, s: str):
+                from app.core.database import async_session
+                async with async_session() as bg_db:
+                    await AnalysisService.run_analysis_sync(bg_db, vid_id, s)
+
+            asyncio.create_task(_run_with_new_session(video_id, style))
             logger.info(f"분석 시작 (동기 모드): video_id={video_id}")
             return {
                 "task_id": f"sync-{video_id}",
@@ -182,7 +188,7 @@ class AnalysisService:
         db: AsyncSession,
         video_id: int,
         user_id: int
-    ) -> AnalysisResult | None:
+    ) -> Optional[AnalysisResult]:
         """
         완료된 영상 분석 결과 조회.
 

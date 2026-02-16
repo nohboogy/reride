@@ -1,23 +1,25 @@
-"""
-/api/v1/analyses — 업로드 + 분석을 하나로 묶은 통합 엔드포인트.
-Flutter 클라이언트가 기대하는 API 형식과 일치시킴.
+"""Unified /api/v1/analyses endpoint.
+
+POST /   – upload video + auto-trigger analysis
+GET  /   – list analyses for the current user
+GET  /{id} – get analysis status / result (ID = video_id as string)
 """
 
-import asyncio
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from pydantic import BaseModel
-from typing import Optional, List, Any
 from datetime import datetime
+from typing import Any, Optional
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from pydantic import BaseModel
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.core.database import get_db
 from app.core.security import get_current_user_id
-from app.core.storage import save_video, generate_filename, get_video_url
-from app.services import VideoService, AnalysisService
-from app.models.video import Video
+from app.core.storage import generate_filename, get_video_url, save_video
 from app.models.analysis import AnalysisResult
+from app.models.video import Video
+from app.services import AnalysisService, VideoService
 
 settings = get_settings()
 router = APIRouter()
@@ -25,51 +27,56 @@ router = APIRouter()
 
 # ── Response schemas ─────────────────────────────────────────────────────────
 
-class AnalysisResponse(BaseModel):
+
+class AnalysisCreateResponse(BaseModel):
     id: str
-    status: str  # pending | processing | done | failed
+    status: str
+    video_id: int
+    created_at: datetime
+
+
+class AnalysisDetailResponse(BaseModel):
+    id: str
+    status: str
     video_id: int
     overall_score: Optional[float] = None
     difficulty_score: Optional[float] = None
     stability_score: Optional[float] = None
-    feedback_text: Optional[str] = None
-    tricks_detected: Optional[List[Any]] = None
+    feedback_text: Optional[Any] = None
+    tricks_detected: Optional[Any] = None
     animation_url: Optional[str] = None
     highlight_url: Optional[str] = None
     overlay_url: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class AnalysisListResponse(BaseModel):
-    items: List[AnalysisResponse]
+    items: list[AnalysisDetailResponse]
     total: int
 
 
 # ── Helper ───────────────────────────────────────────────────────────────────
 
-async def _build_response(video: Video, db: AsyncSession) -> AnalysisResponse:
-    """Video + AnalysisResult → AnalysisResponse."""
-    analysis_result = await db.execute(
-        select(AnalysisResult).where(AnalysisResult.video_id == video.id)
-    )
-    analysis = analysis_result.scalar_one_or_none()
+# Backend video status → analysis status mapping
+_STATUS_MAP = {
+    "uploaded": "pending",
+    "processing": "processing",
+    "completed": "done",
+    "failed": "failed",
+}
 
-    # status mapping
-    status_map = {
-        "uploaded": "pending",
-        "processing": "processing",
-        "completed": "done",
-        "failed": "failed",
-    }
-    status = status_map.get(video.status, "pending")
+
+async def _build_detail_response(
+    video: Video,
+    analysis: Optional[AnalysisResult],
+) -> AnalysisDetailResponse:
+    """Construct an AnalysisDetailResponse from a Video + optional AnalysisResult."""
+    status = _STATUS_MAP.get(video.status, video.status)
+    created_at = analysis.created_at if analysis else video.created_at
 
     animation_url = None
     highlight_url = None
     overlay_url = None
-
     if analysis:
         if analysis.animation_path:
             animation_url = await get_video_url(analysis.animation_path)
@@ -78,7 +85,7 @@ async def _build_response(video: Video, db: AsyncSession) -> AnalysisResponse:
         if analysis.overlay_path:
             overlay_url = await get_video_url(analysis.overlay_path)
 
-    return AnalysisResponse(
+    return AnalysisDetailResponse(
         id=str(video.id),
         status=status,
         video_id=video.id,
@@ -90,36 +97,40 @@ async def _build_response(video: Video, db: AsyncSession) -> AnalysisResponse:
         animation_url=animation_url,
         highlight_url=highlight_url,
         overlay_url=overlay_url,
-        created_at=video.created_at,
+        created_at=created_at,
     )
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
 
-@router.post("/", response_model=AnalysisResponse, status_code=201)
-async def upload_and_analyze(
+
+@router.post("", response_model=AnalysisCreateResponse, status_code=201)
+async def create_analysis(
     file: UploadFile = File(...),
     user_id: int = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    """영상 업로드 + 분석 자동 시작. Flutter 클라이언트 메인 엔드포인트."""
-    # 파일 타입 검증
+    """Upload a video file and automatically trigger AI analysis."""
+    # Validate file type
     if file.content_type not in settings.allowed_video_types:
         raise HTTPException(
             status_code=400,
-            detail="지원하지 않는 영상 형식입니다 (MP4, MOV, AVI만 가능)"
+            detail="지원하지 않는 영상 형식입니다 (MP4, MOV, AVI만 가능)",
         )
 
+    # Read content and validate size
     content = await file.read()
     if len(content) > settings.max_video_size_mb * 1024 * 1024:
         raise HTTPException(
             status_code=400,
-            detail=f"파일 크기가 {settings.max_video_size_mb}MB를 초과합니다"
+            detail=f"파일 크기가 {settings.max_video_size_mb}MB를 초과합니다",
         )
 
-    # 저장 + DB 레코드 생성
+    # Save video to storage (local or S3)
     filename = generate_filename(file.filename or "video.mp4")
     storage_path = await save_video(content, filename)
+
+    # Create Video DB record
     video = await VideoService.create_video(
         db=db,
         user_id=user_id,
@@ -127,45 +138,79 @@ async def upload_and_analyze(
         storage_path=storage_path,
     )
 
-    # 분석 자동 트리거 (백그라운드)
-    asyncio.create_task(
-        AnalysisService.run_analysis_sync(db, video.id)
+    # Auto-trigger analysis (non-blocking in async mode)
+    await AnalysisService.request_analysis(
+        db=db,
+        video_id=video.id,
+        user_id=user_id,
     )
-    video.status = "processing"
-    await db.commit()
 
-    return await _build_response(video, db)
+    return AnalysisCreateResponse(
+        id=str(video.id),
+        status="processing",
+        video_id=video.id,
+        created_at=video.created_at,
+    )
 
 
-@router.get("/", response_model=AnalysisListResponse)
+@router.get("", response_model=AnalysisListResponse)
 async def list_analyses(
     skip: int = 0,
     limit: int = 20,
     user_id: int = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    """현재 사용자의 분석 목록 반환."""
-    videos, total = await VideoService.list_videos(
-        db=db, user_id=user_id, skip=skip, limit=limit
+    """List all analyses (videos) for the current user with pagination."""
+    # Total count
+    count_stmt = select(func.count()).select_from(Video).where(
+        Video.user_id == user_id
     )
-    items = [await _build_response(v, db) for v in videos]
+    count_result = await db.execute(count_stmt)
+    total = count_result.scalar_one()
+
+    # Paginated video list ordered by newest first
+    stmt = (
+        select(Video)
+        .where(Video.user_id == user_id)
+        .order_by(Video.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
+    videos = result.scalars().all()
+
+    items = []
+    for video in videos:
+        analysis_result = await db.execute(
+            select(AnalysisResult).where(AnalysisResult.video_id == video.id)
+        )
+        analysis = analysis_result.scalar_one_or_none()
+        items.append(await _build_detail_response(video, analysis))
+
     return AnalysisListResponse(items=items, total=total)
 
 
-@router.get("/{analysis_id}", response_model=AnalysisResponse)
+@router.get("/{analysis_id}", response_model=AnalysisDetailResponse)
 async def get_analysis(
     analysis_id: str,
     user_id: int = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    """특정 분석 결과 + 상태 조회."""
+    """Get analysis status and result by ID (ID = video_id as string)."""
     try:
         video_id = int(analysis_id)
     except ValueError:
-        raise HTTPException(status_code=404, detail="분석을 찾을 수 없습니다")
+        raise HTTPException(status_code=400, detail="유효하지 않은 분석 ID입니다")
 
+    # Fetch video with ownership check
     video = await VideoService.get_video(db=db, video_id=video_id, user_id=user_id)
     if not video:
         raise HTTPException(status_code=404, detail="분석을 찾을 수 없습니다")
 
-    return await _build_response(video, db)
+    # Fetch analysis result (may not exist yet if still processing)
+    analysis_result = await db.execute(
+        select(AnalysisResult).where(AnalysisResult.video_id == video_id)
+    )
+    analysis = analysis_result.scalar_one_or_none()
+
+    return await _build_detail_response(video, analysis)

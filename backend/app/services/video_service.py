@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, delete
 from app.models.video import Video
@@ -77,7 +78,7 @@ class VideoService:
         db: AsyncSession,
         video_id: int,
         user_id: int
-    ) -> Video | None:
+    ) -> Optional[Video]:
         """Fetch single video with ownership check."""
         stmt = select(Video).where(
             Video.id == video_id,

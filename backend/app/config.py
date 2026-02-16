@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import List
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
@@ -30,7 +32,7 @@ class Settings(BaseSettings):
 
     # File Upload
     max_video_size_mb: int = 100
-    allowed_video_types: list[str] = ["video/mp4", "video/quicktime", "video/x-msvideo"]
+    allowed_video_types: List[str] = ["video/mp4", "video/quicktime", "video/x-msvideo"]
 
     # Celery
     celery_broker_url: str = "redis://localhost:6379/1"
