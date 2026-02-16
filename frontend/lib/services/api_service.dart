@@ -265,11 +265,6 @@ class ApiService {
         .toList();
   }
 
-  /// Delete an analysis (and its associated video) by ID.
-  Future<void> deleteAnalysis(String analysisId) async {
-    await _dio.delete('/api/v1/analyses/$analysisId');
-  }
-
   // ── User / Profile endpoints ───────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getProfile() async {

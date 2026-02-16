@@ -38,7 +38,7 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
     try {
       final apiService = ref.read(apiServiceProvider);
       final profile = await apiService.getProfile();
-      return ProfileState(profile: profile as UserProfile);
+      return ProfileState(profile: profile);
     } catch (e) {
       return ProfileState(error: e.toString());
     }
@@ -55,7 +55,7 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
     try {
       final apiService = ref.read(apiServiceProvider);
       final updated = await apiService.updateProfile(data);
-      state = AsyncValue.data(ProfileState(profile: updated as UserProfile));
+      state = AsyncValue.data(ProfileState(profile: updated));
     } catch (e) {
       state = AsyncValue.data(
         ProfileState(
