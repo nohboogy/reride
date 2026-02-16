@@ -47,6 +47,23 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _fetchVideos());
   }
+
+  /// Delete an analysis by ID, then remove it from the local list.
+  Future<void> delete(String analysisId) async {
+    final current = state.value;
+    if (current == null) return;
+    try {
+      final apiService = ref.read(apiServiceProvider);
+      await apiService.deleteAnalysis(analysisId);
+      final updated = current.videos
+          .where((v) => v.id != analysisId)
+          .toList();
+      state = AsyncValue.data(current.copyWith(videos: updated));
+    } catch (e) {
+      // Keep existing list; surface error
+      state = AsyncValue.data(current.copyWith(error: e.toString()));
+    }
+  }
 }
 
 final homeProvider = AsyncNotifierProvider<HomeNotifier, HomeState>(

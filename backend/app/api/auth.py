@@ -11,7 +11,7 @@ from app.core.exceptions import (
     InvalidCredentialsError,
 )
 from app.services import AuthService
-from app.schemas.user import UserCreate, UserLogin, UserResponse, TokenResponse
+from app.schemas.user import UserCreate, UserLogin, UserResponse, UserUpdate, TokenResponse
 
 logger = logging.getLogger(__name__)
 
@@ -99,3 +99,34 @@ async def get_me(
             status_code=500,
             detail=f"Failed to fetch user profile: {str(e)}"
         )
+
+
+@router.patch("/me", response_model=UserResponse)
+async def update_me(
+    user_in: UserUpdate,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update current user profile (username)."""
+    try:
+        user = await AuthService.get_user_by_id(db=db, user_id=user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다")
+        if user_in.username is not None:
+            user.username = user_in.username
+        await db.flush()
+        await db.refresh(user)
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error updating user profile for {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(e)}")
+
+
+@router.post("/logout", status_code=204)
+async def logout(user_id: int = Depends(get_current_user_id)):
+    """Logout — token invalidation is handled client-side (stateless JWT)."""
+    # JWT는 stateless이므로 서버 측에서 별도 처리 없음.
+    # 클라이언트가 토큰을 삭제하면 로그아웃 완료.
+    return None
