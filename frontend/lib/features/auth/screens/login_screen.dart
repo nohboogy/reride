@@ -48,7 +48,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     });
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
@@ -205,7 +207,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 OutlinedButton(
                   onPressed: authState.isLoading
                       ? null
-                      : () => context.go(AppRoutes.register),
+                      : () => context.push(AppRoutes.register),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.all(16),
                     side: const BorderSide(color: RerideColors.primary),
@@ -220,7 +222,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

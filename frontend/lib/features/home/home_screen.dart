@@ -22,7 +22,7 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.person_outline),
             tooltip: 'Profile',
-            onPressed: () => context.go(AppRoutes.profile),
+            onPressed: () => context.push(AppRoutes.profile),
           ),
         ],
       ),
@@ -135,7 +135,7 @@ class _UploadButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => context.go(AppRoutes.upload),
+          onTap: () => context.push(AppRoutes.upload),
           child: const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Row(
@@ -420,7 +420,7 @@ class _SwipeableSessionCard extends StatelessWidget {
           trailing: const Icon(Icons.chevron_right,
               color: RerideColors.primaryLight),
           onTap: () =>
-              context.go(AppRoutes.analysisPath(video.id)),
+              context.push(AppRoutes.analysisPath(video.id)),
         ),
       ),
     );

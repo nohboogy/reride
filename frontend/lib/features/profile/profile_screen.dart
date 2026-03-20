@@ -150,17 +150,23 @@ class _ProfileBody extends ConsumerWidget {
               _SettingsItem(
                 icon: Icons.notifications_outlined,
                 label: 'Notifications',
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('준비 중인 기능입니다')),
+                ),
               ),
               _SettingsItem(
                 icon: Icons.language_outlined,
                 label: 'Language',
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('준비 중인 기능입니다')),
+                ),
               ),
               _SettingsItem(
                 icon: Icons.help_outline,
                 label: 'Help & Feedback',
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('준비 중인 기능입니다')),
+                ),
               ),
               const Divider(height: 24),
               _SettingsItem(

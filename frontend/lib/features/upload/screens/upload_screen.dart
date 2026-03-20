@@ -15,17 +15,26 @@ class UploadScreen extends ConsumerWidget {
     // 업로드 완료 시 분석 결과 화면으로 이동
     ref.listen(uploadProvider, (previous, next) {
       if (next.isDone && next.uploadedVideo?.id.isNotEmpty == true) {
-        context.go('/analysis/${next.uploadedVideo!.id}');
+        context.pushReplacement('/analysis/${next.uploadedVideo!.id}');
         ref.read(uploadProvider.notifier).reset();
       }
     });
 
-    return Scaffold(
+    return PopScope(
+      canPop: !uploadState.isUploading,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('업로드 중에는 나갈 수 없습니다')),
+          );
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('영상 업로드'),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.pop(),
+          onPressed: uploadState.isUploading ? null : () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -101,7 +110,7 @@ class UploadScreen extends ConsumerWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildPickerArea(

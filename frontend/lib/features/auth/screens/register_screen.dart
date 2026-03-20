@@ -52,7 +52,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         title: const Text('회원가입'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () => context.go(AppRoutes.login),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
