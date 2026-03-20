@@ -25,8 +25,7 @@ boto3==1.42.49
 mediapipe==0.10.32
 opencv-python-headless==4.13.0.92
 numpy==2.4.2
-torch==2.10.0  # CPU 버전: --index-url https://download.pytorch.org/whl/cpu
-torchvision==0.25.0  # CPU 버전: --index-url https://download.pytorch.org/whl/cpu
+# torch/torchvision: installed via Dockerfile with CPU index
 
 # Image/Video Processing
 Pillow==11.1.0
