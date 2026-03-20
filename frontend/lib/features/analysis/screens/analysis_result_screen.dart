@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 import '../../../core/constants/app_colors.dart';
 import '../providers/analysis_provider.dart';
 import '../../../services/api_service.dart';
@@ -34,7 +36,7 @@ class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen> {
         title: const Text('분석 결과'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.go('/'),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
         ),
       ),
       body: analysisAsync.when(
@@ -394,6 +396,17 @@ class _ResultView extends StatelessWidget {
             const SizedBox(height: 16),
           ],
 
+          // 오버레이 영상
+          if (result.overlayUrl != null) ...[
+            Text(
+              '오버레이 영상',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 12),
+            _OverlayVideoPlayer(url: result.overlayUrl!),
+            const SizedBox(height: 16),
+          ],
+
           // 분석 날짜
           Text(
             '분석 일시: ${_formatDateTime(result.analyzedAt)}',
@@ -404,7 +417,7 @@ class _ResultView extends StatelessWidget {
 
           // 홈으로 버튼
           OutlinedButton(
-            onPressed: () => context.go('/'),
+            onPressed: () => context.canPop() ? context.pop() : context.go('/'),
             child: const Text('홈으로 돌아가기'),
           ),
         ],
@@ -462,6 +475,105 @@ class _ScoreRow extends StatelessWidget {
             padding: EdgeInsets.zero,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// 오버레이 영상 플레이어
+// ─────────────────────────────────────────
+
+class _OverlayVideoPlayer extends StatefulWidget {
+  final String url;
+
+  const _OverlayVideoPlayer({required this.url});
+
+  @override
+  State<_OverlayVideoPlayer> createState() => _OverlayVideoPlayerState();
+}
+
+class _OverlayVideoPlayerState extends State<_OverlayVideoPlayer> {
+  late VideoPlayerController _videoController;
+  ChewieController? _chewieController;
+  bool _initialized = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _initPlayer();
+  }
+
+  Future<void> _initPlayer() async {
+    try {
+      _videoController = VideoPlayerController.networkUrl(
+        Uri.parse(widget.url),
+      );
+      await _videoController.initialize();
+      _chewieController = ChewieController(
+        videoPlayerController: _videoController,
+        aspectRatio: _videoController.value.aspectRatio,
+        autoPlay: false,
+        looping: false,
+        allowFullScreen: true,
+        allowMuting: true,
+        placeholder: Container(color: AppColors.surfaceVariant),
+      );
+      if (mounted) setState(() => _initialized = true);
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString());
+    }
+  }
+
+  @override
+  void dispose() {
+    _chewieController?.dispose();
+    _videoController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_error != null) {
+      return Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.videocam_off, color: AppColors.textDisabled, size: 36),
+              SizedBox(height: 8),
+              Text('영상을 불러올 수 없습니다',
+                  style: TextStyle(color: AppColors.textDisabled, fontSize: 13)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (!_initialized) {
+      return Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: _videoController.value.aspectRatio,
+        child: Chewie(controller: _chewieController!),
       ),
     );
   }

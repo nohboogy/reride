@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/home/home_screen.dart';
 import '../features/upload/screens/upload_screen.dart';
-import '../features/analysis/analysis_screen.dart';
+import '../features/analysis/screens/analysis_result_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
@@ -98,7 +98,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'analysis',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return _slideTransition(state, AnalysisScreen(analysisId: id));
+          return _slideTransition(state, AnalysisResultScreen(analysisId: id));
         },
       ),
       GoRoute(
