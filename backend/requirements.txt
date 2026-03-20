@@ -6,6 +6,8 @@ python-multipart==0.0.22
 # Database
 sqlalchemy==2.0.46
 aiosqlite==0.22.1
+psycopg2-binary==2.9.10
+asyncpg==0.30.0
 alembic==1.18.4
 greenlet==3.3.1
 
