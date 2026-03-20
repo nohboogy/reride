@@ -152,11 +152,17 @@ class AnalysisResult {
       analyzedAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
-      animationUrl: json['animation_url'] as String?,
-      highlightUrl: json['highlight_url'] as String?,
-      overlayUrl: json['overlay_url'] as String?,
+      animationUrl: _toAbsoluteUrl(json['animation_url'] as String?),
+      highlightUrl: _toAbsoluteUrl(json['highlight_url'] as String?),
+      overlayUrl: _toAbsoluteUrl(json['overlay_url'] as String?),
     );
   }
+}
+
+String? _toAbsoluteUrl(String? url) {
+  if (url == null) return null;
+  if (url.startsWith('http')) return url;
+  return '$_kBaseUrl$url';
 }
 
 // ── ApiService ───────────────────────────────────────────────────────────────
