@@ -33,7 +33,7 @@ class ApiConstants {
 
   // 폴링 간격 (분석 상태 확인)
   static const int analysisPollingInterval = 3000; // ms
-  static const int analysisMaxPollingRetries = 40;
+  static const int analysisMaxPollingRetries = 600;
 
   // Secure Storage Keys
   static const String accessTokenKey = 'access_token';
