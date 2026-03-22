@@ -37,12 +37,33 @@ class AnalysisService:
             with ReridePipeline(output_dir="outputs") as pipeline:
                 return pipeline.analyze(video_path=video_path, video_id=str(vid_id), style=style_param)
 
+        from app.core.storage import download_to_local, save_output_file
+
         # Get video
         result = await db.execute(select(Video).where(Video.id == video_id))
         video = result.scalar_one()
 
+        # S3 저장된 경우 로컬로 다운로드
+        local_video_path = await download_to_local(video.storage_path)
+
         # Run AI pipeline in thread
-        pipeline_result = await asyncio.to_thread(_run_pipeline, video.storage_path, video_id, style)
+        pipeline_result = await asyncio.to_thread(_run_pipeline, local_video_path, video_id, style)
+
+        # 출력 파일 S3 업로드 (S3 설정된 경우)
+        animation_path = pipeline_result.animation_path
+        highlight_path = pipeline_result.highlight_path
+        overlay_path = pipeline_result.overlay_path
+        pose_data_path = pipeline_result.pose_data_path
+
+        if settings.aws_access_key_id:
+            if animation_path:
+                animation_path = await save_output_file(animation_path)
+            if highlight_path:
+                highlight_path = await save_output_file(highlight_path)
+            if overlay_path:
+                overlay_path = await save_output_file(overlay_path)
+            if pose_data_path:
+                pose_data_path = await save_output_file(pose_data_path)
 
         # Save results
         analysis = AnalysisResult(
@@ -57,10 +78,10 @@ class AnalysisService:
             difficulty_score=pipeline_result.scores.difficulty_score,
             stability_score=pipeline_result.scores.stability_score,
             feedback_text=pipeline_result.scores.feedback,
-            animation_path=pipeline_result.animation_path,
-            highlight_path=pipeline_result.highlight_path,
-            overlay_path=pipeline_result.overlay_path,
-            pose_data_path=pipeline_result.pose_data_path,
+            animation_path=animation_path,
+            highlight_path=highlight_path,
+            overlay_path=overlay_path,
+            pose_data_path=pose_data_path,
         )
         db.add(analysis)
         video.status = "completed"

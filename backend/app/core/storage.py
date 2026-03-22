@@ -1,3 +1,4 @@
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -62,3 +63,34 @@ async def get_video_url(storage_path: str) -> str:
         return url
     else:
         return f"/static/{storage_path}"
+
+
+async def download_to_local(storage_path: str) -> str:
+    """S3 파일을 로컬 임시 파일로 다운로드. 로컬 경로 반환."""
+    if not storage_path.startswith("s3://"):
+        return storage_path
+    bucket, key = storage_path.replace("s3://", "").split("/", 1)
+    suffix = Path(key).suffix
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    tmp.close()
+    _get_s3_client().download_file(bucket, key, tmp.name)
+    return tmp.name
+
+
+async def save_output_file(local_path: str) -> str:
+    """로컬 출력 파일을 S3에 업로드. S3 경로 반환. S3 미설정 시 로컬 경로 반환."""
+    if not settings.aws_access_key_id:
+        return local_path
+    path = Path(local_path)
+    storage_key = f"outputs/{path.name}"
+    content_type = "video/mp4" if path.suffix == ".mp4" else "application/octet-stream"
+    try:
+        _get_s3_client().upload_file(
+            str(path),
+            settings.s3_bucket_name,
+            storage_key,
+            ExtraArgs={"ContentType": content_type},
+        )
+        return f"s3://{settings.s3_bucket_name}/{storage_key}"
+    except ClientError as e:
+        raise RuntimeError(f"S3 업로드 실패: {e}")
